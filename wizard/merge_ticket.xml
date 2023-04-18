@@ -1,0 +1,20 @@
+<odoo>
+    <record id="merge_ticket_view_form" model="ir.ui.view">
+        <field name="name">merge.ticket.view.form</field>
+        <field name="model">merge.ticket</field>
+        <field name="arch" type="xml">
+            <form string="">
+                <sheet>
+                    <group>
+                        <field name="partner_id" options="{'no_create':True}"/>
+                        <field name="user_id" options="{'no_create':True}"/>
+                    </group>
+                </sheet>
+                <footer>
+                    <button string="Confirm" class="oe_highlight" type="object" name="merge_ticket"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

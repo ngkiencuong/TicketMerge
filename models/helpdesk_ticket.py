@@ -4,26 +4,20 @@ from odoo import api, fields, models
 class HelpdeskTicket(models.Model):
     _inherit = 'helpdesk.ticket'
 
-    def action_merge_tickets(self, ticket_ids):
-        # Get the tickets to merge
-        tickets = self.browse(ticket_ids)
+    surviving_ticket = fields.Many2one(comodel_name="helpdesk.ticket", string="Surviving_ticket", ondelete="cascade", index=True,)
+    archived_tickets = fields.One2many(comodel_name="helpdesk.ticket", inverse_name="surviving_ticket", string="Archived Tickets", context={'active_test': False}, readonly=True)
 
-        # Find the oldest ticket
-        surviving_ticket = min(tickets, key=lambda t: t.create_date)
-
-        # Merge titles and descriptions
-        surviving_ticket.title = ' '.join(tickets.mapped('title'))
-        surviving_ticket.description = ' '.join(tickets.mapped('description'))
-
-        # Merge timesheets and time estimations
-        for ticket in tickets - surviving_ticket:
-            ticket.timesheet_ids.write({'ticket_id': surviving_ticket.id})
-            surviving_ticket.planned_hours += ticket.planned_hours
-
-            # Add a link to the archived ticket in the description
-            surviving_ticket.description += f'\n\n[Archived Ticket {ticket.id}]({ticket.get_portal_url()})'
-
-            # Archive the ticket
-            ticket.active = False
-
-        return surviving_ticket
+    def _action_open_merge_tickets(self):
+        active_tickets = self.env['helpdesk.ticket'].browse(self._context.get('active_ids', []))
+        return {
+            'name': 'Merge Tickets',
+            'view_mode': 'form',
+            'res_model': 'merge.ticket',
+            'type': 'ir.actions.act_window',
+            'view_id': self.env.ref('TicketMerge.merge_ticket_view_form').id,
+            'target': 'new',
+            'context': {
+                'partner_ids': active_tickets.mapped('partner_id.id'),
+                'user_ids': active_tickets.mapped('user_id.id'),
+            }
+        }
