@@ -37,4 +37,11 @@ class MergeTickets(models.TransientModel):
             ticket.active = False
             # Add the link to the archived ticket
             ticket.surviving_ticket = surviving_ticket.id
+            # merge chatter note and attachment
+            for mess in self.env['mail.message'].search([('res_id', '=', ticket.id), ('model', '=', 'helpdesk.ticket')], order='id'):
+                mess.sudo().write({'res_id': surviving_ticket.id})
+                mess.copy({'res_id': ticket.id})
+            for attach in self.env['ir.attachment'].search([('res_id', '=', ticket.id), ('res_model', '=', 'helpdesk.ticket')]):
+                attach.copy()
+                attach.sudo().write({'res_id': surviving_ticket.id})
         return surviving_ticket
