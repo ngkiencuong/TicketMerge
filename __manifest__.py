@@ -3,7 +3,7 @@
     'version': '1.0',
     'category': 'Helpdesk',
     'summary': 'Merge multiple helpdesk tickets',
-    'author': 'Your Name',
+    'author': 'Simplify-ERP™',
     'website': 'https://simplify-erp.de',
     'depends': ['helpdesk', 'helpdesk_timesheet'],
     'data': [
