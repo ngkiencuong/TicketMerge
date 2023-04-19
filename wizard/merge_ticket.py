@@ -19,14 +19,15 @@ class MergeTickets(models.TransientModel):
 
     def merge_ticket(self):
         # Get the tickets to merge
-        tickets = self.env['helpdesk.ticket'].browse(self._context.get('active_ids', [])).filtered_domain([('partner_id', '=', self.partner_id.id)])
+        tickets = self.env['helpdesk.ticket'].browse(self._context.get('active_ids', []))
         # Find the oldest ticket
         surviving_ticket = min(tickets, key=lambda t: t.create_date)
-        # Merge titles, descriptions and assignee
+        # Merge titles, descriptions, assignee and customer
         surviving_ticket = surviving_ticket.sudo()
         surviving_ticket.name = ' '.join(tickets.mapped('name'))
         surviving_ticket.description = ' '.join(tickets.filtered_domain([('description', '!=', False)]).mapped('description'))
         surviving_ticket.user_id = self.user_id
+        surviving_ticket.partner_id = self.partner_id
         # Merge timesheets
         for ticket in tickets - surviving_ticket:
             if ticket.timesheet_ids and not surviving_ticket.team_id.use_helpdesk_timesheet:
@@ -40,8 +41,6 @@ class MergeTickets(models.TransientModel):
             # merge chatter note and attachment
             for mess in self.env['mail.message'].search([('res_id', '=', ticket.id), ('model', '=', 'helpdesk.ticket')], order='id'):
                 mess.sudo().write({'res_id': surviving_ticket.id})
-                mess.copy({'res_id': ticket.id})
             for attach in self.env['ir.attachment'].search([('res_id', '=', ticket.id), ('res_model', '=', 'helpdesk.ticket')]):
-                attach.copy()
                 attach.sudo().write({'res_id': surviving_ticket.id})
         return surviving_ticket
