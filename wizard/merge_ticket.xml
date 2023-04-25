@@ -11,7 +11,7 @@
                     </group>
                 </sheet>
                 <footer>
-                    <button string="Confirm" class="oe_highlight" type="object" name="merge_ticket"/>
+                    <button string="Confirm" class="oe_highlight" type="object" name="action_confirm"/>
                     <button string="Cancel" class="btn-secondary" special="cancel"/>
                 </footer>
             </form>
