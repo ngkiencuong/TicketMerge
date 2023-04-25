@@ -4,8 +4,9 @@ from odoo import api, fields, models
 class HelpdeskTicket(models.Model):
     _inherit = 'helpdesk.ticket'
 
-    surviving_ticket = fields.Many2one(comodel_name="helpdesk.ticket", string="Surviving_ticket", ondelete="cascade", index=True,)
+    surviving_ticket = fields.Many2one(comodel_name="helpdesk.ticket", string="Surviving_ticket", ondelete="cascade", index=True, copy=False)
     archived_tickets = fields.One2many(comodel_name="helpdesk.ticket", inverse_name="surviving_ticket", string="Archived Tickets", context={'active_test': False}, readonly=True)
+    x_archived = fields.Selection([('yes', 'Yes'), ('no', 'No')], string='Archived', compute='_compute_x_archived')
 
     def _action_open_merge_tickets(self):
         ctx = self._context.copy()
@@ -21,3 +22,8 @@ class HelpdeskTicket(models.Model):
             'target': 'new',
             'context': ctx,
         }
+
+    @api.depends('active')
+    def _compute_x_archived(self):
+        for rec in self:
+            rec.x_archived = 'no' if rec.active else 'yes'

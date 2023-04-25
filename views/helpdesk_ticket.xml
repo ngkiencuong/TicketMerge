@@ -13,7 +13,7 @@
                             <field name="team_id"/>
                             <field name="partner_id"/>
                             <field name="stage_id"/>
-                            <field name="active"/>
+                            <field name="x_archived"/>
                         </tree>
                     </field>
                 </page>

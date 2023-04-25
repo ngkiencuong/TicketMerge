@@ -25,12 +25,13 @@ class MergeTickets(models.TransientModel):
         for rec in old_tickets:
             self.merge_chatter_attachment(rec, new_ticket)
             rec.timesheet_ids.sudo().write({'helpdesk_ticket_id': new_ticket.id})
-        # old_tickets.write({'active': False})
+        old_tickets.sudo().unlink()
+        return new_ticket
 
     def merge_ticket(self, tickets):
         # Find the oldest ticket
         surviving_ticket = min(tickets, key=lambda t: t.create_date)
-        new_ticket = surviving_ticket.copy()
+        new_ticket = surviving_ticket.copy(dict(active=True))
         for mess in self.env['mail.message'].search([('res_id', '=', new_ticket.id), ('model', '=', 'helpdesk.ticket')]):
             mess.sudo().unlink()
         # Merge titles, descriptions, assignee and customer
