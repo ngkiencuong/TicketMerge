@@ -5,14 +5,15 @@
         <field name="inherit_id" ref="helpdesk_timesheet.helpdesk_ticket_view_form_inherit_helpdesk_timesheet"/>
         <field name="arch" type="xml">
             <xpath expr="//page[@name='timesheets']" position="after">
-                <page string="Archived Tickets" name="archived_tickets" attrs="{'invisible': [('archived_tickets', '=', [])]}">
+                <page string="Related Tickets" name="related_tickets" attrs="{'invisible': [('archived_tickets', '=', [])]}">
                     <field name="archived_tickets" mode="tree" nolabel="1">
                         <tree>
-                            <field name="priority"/>
+                            <field name="priority" widget="priority"/>
                             <field name="name"/>
                             <field name="team_id"/>
                             <field name="partner_id"/>
                             <field name="stage_id"/>
+                            <field name="x_archived"/>
                         </tree>
                     </field>
                 </page>
