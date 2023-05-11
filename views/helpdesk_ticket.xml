@@ -2,9 +2,9 @@
     <record id="merge_helpdesk_ticket_view_form" model="ir.ui.view">
         <field name="name">merge.helpdesk.ticket.view.form</field>
         <field name="model">helpdesk.ticket</field>
-        <field name="inherit_id" ref="helpdesk_timesheet.helpdesk_ticket_view_form_inherit_helpdesk_timesheet"/>
+        <field name="inherit_id" ref="helpdesk_mgmt.ticket_view_form"/>
         <field name="arch" type="xml">
-            <xpath expr="//page[@name='timesheets']" position="after">
+            <xpath expr="//page[@name='other_info']" position="after">
                 <page string="Related Tickets" name="related_tickets" attrs="{'invisible': [('archived_tickets', '=', [])]}">
                     <field name="archived_tickets" mode="tree" nolabel="1">
                         <tree>
@@ -23,8 +23,8 @@
 
     <record id="action_helpdesk_ticket_merge" model="ir.actions.server">
         <field name="name">Merge</field>
-        <field name="model_id" ref="helpdesk.model_helpdesk_ticket"/>
-        <field name="binding_model_id" ref="helpdesk.model_helpdesk_ticket"/>
+        <field name="model_id" ref="helpdesk_mgmt.model_helpdesk_ticket"/>
+        <field name="binding_model_id" ref="helpdesk_mgmt.model_helpdesk_ticket"/>
         <field name="state">code</field>
         <field name="code">
             action = records._action_open_merge_tickets()

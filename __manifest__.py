@@ -5,7 +5,7 @@
     'summary': 'Merge multiple helpdesk tickets',
     'author': 'Simplify-ERP™',
     'website': 'https://simplify-erp.de',
-    'depends': ['helpdesk', 'helpdesk_timesheet'],
+    'depends': ['Helpdesk'],
     'data': [
         'views/helpdesk_ticket.xml',
         'wizard/merge_ticket.xml',

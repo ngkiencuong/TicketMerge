@@ -1,5 +1,4 @@
 from odoo import fields, models, _
-from odoo.exceptions import ValidationError
 
 
 class MergeTickets(models.TransientModel):
@@ -19,16 +18,17 @@ class MergeTickets(models.TransientModel):
 
     def action_confirm(self):
         tickets = self.env['helpdesk.ticket'].browse(self._context.get('active_ids', []))
+        timesheet = tickets.mapped('timesheet_ids')
+        product = tickets.mapped('ticket_line_ids')
         old_tickets = tickets.filtered(lambda x: x.archived_tickets)
         tickets = tickets + tickets.mapped('archived_tickets') - old_tickets
-        new_ticket = self.merge_ticket(tickets)
+        new_ticket = self.merge_ticket(tickets, timesheet, product)
         for rec in old_tickets:
             self.merge_chatter_attachment(rec, new_ticket)
-            rec.timesheet_ids.sudo().write({'helpdesk_ticket_id': new_ticket.id})
         old_tickets.sudo().unlink()
         return new_ticket
 
-    def merge_ticket(self, tickets):
+    def merge_ticket(self, tickets, timesheet, product):
         # Find the oldest ticket
         surviving_ticket = min(tickets, key=lambda t: t.create_date)
         new_ticket = surviving_ticket.copy(dict(active=True))
@@ -37,17 +37,15 @@ class MergeTickets(models.TransientModel):
         # Merge titles, descriptions, assignee and customer
         new_ticket.name = ' '.join(tickets.mapped('name'))
         new_ticket.description = ' '.join(tickets.filtered_domain([('description', '!=', False)]).mapped('description'))
-        new_ticket.user_id = self.user_id
-        new_ticket.partner_id = self.partner_id
-        # Merge timesheets
+        new_ticket.user_id = self.user_id if self.user_id else new_ticket.user_id
+        new_ticket.partner_id = self.partner_id if self.partner_id else self.partner_id
+        # merge timesheet and product
+        timesheet.sudo().write({'helpdesk_ticket_id': new_ticket.id})
+        product.sudo().write({'ticket_id': new_ticket.id})
         for ticket in tickets:
-            if ticket.timesheet_ids and not new_ticket.team_id.use_helpdesk_timesheet:
-                raise ValidationError(_("Team in the surviving ticket doesn't allow timesheet. Please check it!"))
             ticket = ticket.sudo()
-            ticket.timesheet_ids.write({'helpdesk_ticket_id': new_ticket.id})
             # Archive the ticket
             ticket.active = False
-            # Add the link to the archived ticket
             ticket.surviving_ticket = new_ticket.id
             # merge chatter note and attachment
             self.merge_chatter_attachment(ticket, new_ticket)
